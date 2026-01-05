@@ -9,7 +9,7 @@ export class FlapDigit extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['digit'];
+        return ['digit', 'font'];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -25,11 +25,14 @@ export class FlapDigit extends HTMLElement {
             } else if (this.shadowRoot && this.shadowRoot.getElementById('digit-container')) {
                 this._syncAllText(this._digit);
             }
+        } else if (name === 'font' && oldValue !== newValue) {
+            this._updateFont();
         }
     }
 
     connectedCallback() {
         this._render();
+        this._updateFont();
         this._syncAllText(this._digit);
         this._resizeObserver.observe(this);
     }
@@ -44,6 +47,15 @@ export class FlapDigit extends HTMLElement {
             const el = this.shadowRoot.getElementById(id);
             if (el) el.textContent = val;
         });
+    }
+
+    _updateFont() {
+        const font = this.getAttribute('font');
+        if (font) {
+            this.style.setProperty('--digit-font', font);
+        } else {
+            this.style.removeProperty('--digit-font');
+        }
     }
 
     _render() {
@@ -79,7 +91,7 @@ export class FlapDigit extends HTMLElement {
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                    font-family: var(--digit-font);
                     font-weight: 800;
                     backface-visibility: hidden;
                     box-sizing: border-box;
@@ -92,7 +104,8 @@ export class FlapDigit extends HTMLElement {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 80px; 
+                    font-family: var(--digit-font);
+                    font-weight: 800;
                     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
                 }
 

@@ -74,12 +74,36 @@ h1 {
     gap: 0.4rem;
 }
 
-.slider-item label {
+.slider-item label, .select-item label {
     font-size: 0.6rem;
     font-weight: 800;
     letter-spacing: 0.1rem;
     opacity: 0.4;
     text-transform: uppercase;
+    margin-bottom: 0.2rem;
+}
+
+.select-item select {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-color);
+    font-family: var(--font-main);
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.3s;
+}
+
+.select-item select:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.select-item select option {
+    background: #1a1a1a;
+    color: #fff;
 }
 
 input[type=range] {

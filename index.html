@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="index.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:wght@700&family=Fira+Code:wght@700&family=Inter:wght@800&family=JetBrains+Mono:wght@800&family=Oswald:wght@700&family=Roboto+Mono:wght@700&family=Space+Mono:wght@700&family=Stardos+Stencil:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
@@ -33,6 +33,32 @@
                     <div class="slider-item">
                         <label for="height">HEIGHT</label>
                         <input type="range" id="height" min="80" max="400" value="140">
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="control-group">
+                    <div class="select-item">
+                        <label for="font-select">FONT</label>
+                        <select id="font-select">
+                            <option value="">Default</option>
+                            <optgroup label="Modern">
+                                <option value="'Inter', sans-serif">Inter</option>
+                                <option value="'Oswald', sans-serif">Oswald</option>
+                            </optgroup>
+                            <optgroup label="Industrial / Retro">
+                                <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
+                                <option value="'Stardos Stencil', cursive">Stardos Stencil</option>
+                                <option value="'Impact', sans-serif">Impact</option>
+                                <option value="'Arial Black', sans-serif">Arial Black</option>
+                            </optgroup>
+                            <optgroup label="Monospaced">
+                                <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                                <option value="'Space Mono', monospace">Space Mono</option>
+                                <option value="'Fira Code', monospace">Fira Code</option>
+                                <option value="'Roboto Mono', monospace">Roboto Mono</option>
+                                <option value="'Courier Prime', monospace">Courier Prime</option>
+                            </optgroup>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -120,19 +146,27 @@
 
         const widthSlider = document.getElementById('width');
         const heightSlider = document.getElementById('height');
+        const fontSelect = document.getElementById('font-select');
 
         function syncSliderStyles() {
             const w = widthSlider.value + 'px';
             const h = heightSlider.value + 'px';
+            const f = fontSelect.value;
             const digits = document.querySelectorAll('flap-digit');
             digits.forEach(d => {
                 d.style.width = w;
                 d.style.height = h;
+                if (f) {
+                    d.setAttribute('font', f);
+                } else {
+                    d.removeAttribute('font');
+                }
             });
         }
 
         widthSlider.addEventListener('input', syncSliderStyles);
         heightSlider.addEventListener('input', syncSliderStyles);
+        fontSelect.addEventListener('change', syncSliderStyles);
 
         // Initial sizing trigger
         window.addEventListener('load', () => {
