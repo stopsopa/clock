@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:wght@700&family=Fira+Code:wght@700&family=Inter:wght@800&family=JetBrains+Mono:wght@800&family=Oswald:wght@700&family=Roboto+Mono:wght@700&family=Space+Mono:wght@700&family=Stardos+Stencil:wght@700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="bg-enabled">
     <div class="app-container">
         <header>
             <a href="." id="reset-link" class="reset-link"><h1>SPLIT-FLAP</h1></a>
@@ -64,6 +64,12 @@
                             </optgroup>
                         </select>
                     </div>
+                <div class="divider"></div>
+                <div class="control-group">
+                    <label class="toggle-container">
+                        <input type="checkbox" id="light-toggle">
+                        <span class="label-text">LIGHT</span>
+                    </label>
                 </div>
             </div>
         </header>
@@ -107,6 +113,7 @@
         const heightSlider = document.getElementById('height');
         const offsetSlider = document.getElementById('v-offset');
         const fontSelect = document.getElementById('font-select');
+        const lightToggle = document.getElementById('light-toggle');
 
         // 1. Collect Defaults
         const DEFAULTS = {
@@ -114,7 +121,8 @@
             width: widthSlider.value,
             height: heightSlider.value,
             'v-offset': offsetSlider.value,
-            fontIndex: fontSelect.selectedIndex.toString()
+            fontIndex: fontSelect.selectedIndex.toString(),
+            light: lightToggle.checked
         };
 
         let is24h = DEFAULTS.format === '24';
@@ -157,6 +165,14 @@
             const h = heightSlider.value + 'px';
             const off = offsetSlider.value;
             const f = fontSelect.value;
+            const isLight = lightToggle.checked;
+
+            if (isLight) {
+                document.body.classList.remove('bg-enabled');
+            } else {
+                document.body.classList.add('bg-enabled');
+            }
+
             const digits = document.querySelectorAll('flap-digit');
             digits.forEach(d => {
                 d.style.width = w;
@@ -185,6 +201,8 @@
             const currentFontIndex = fontSelect.selectedIndex.toString();
             if (currentFontIndex !== DEFAULTS.fontIndex) params.set('fontIndex', currentFontIndex);
 
+            if (lightToggle.checked !== DEFAULTS.light) params.set('light', '1');
+
             const search = params.toString();
             const newUrl = window.location.pathname + (search ? '?' + search : '');
             if (window.location.search !== (search ? '?' + search : '')) {
@@ -211,6 +229,9 @@
                     fontSelect.selectedIndex = idx;
                 }
             }
+            if (params.has('light')) {
+                lightToggle.checked = params.get('light') === '1';
+            }
 
             // Sync internal state
             is24h = Array.from(formatRadios).find(r => r.checked)?.value === '24';
@@ -232,6 +253,7 @@
         heightSlider.addEventListener('input', syncSliderStyles);
         offsetSlider.addEventListener('input', syncSliderStyles);
         fontSelect.addEventListener('change', syncSliderStyles);
+        lightToggle.addEventListener('change', syncSliderStyles);
 
         // Initial setup
         window.addEventListener('load', () => {
