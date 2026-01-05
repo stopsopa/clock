@@ -90,23 +90,23 @@ export class FlapDigit extends HTMLElement {
                     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
                 }
 
-                /* Fixed backgrounds */
+                /* Fixed backgrounds - standardized for consistency */
                 .top {
                     top: 0;
                     height: calc(50% - 1px);
                     border-top-left-radius: 6px;
                     border-top-right-radius: 6px;
-                    background: linear-gradient(to bottom, #333 0%, #222 100%);
+                    background: linear-gradient(to bottom, #333 0%, #1a1a1a 90%, #000 100%);
                 }
- 
+
                 .bottom {
                     bottom: 0;
                     height: calc(50% - 1px);
                     border-bottom-left-radius: 6px;
                     border-bottom-right-radius: 6px;
-                    background: linear-gradient(to bottom, #1d1d1d 0%, #111 100%);
+                    background: linear-gradient(to bottom, #000 10%, #1a1a1a 100%);
                 }
- 
+
                 .top .text { top: 0; }
                 .bottom .text { bottom: 0; }
 
@@ -139,15 +139,15 @@ export class FlapDigit extends HTMLElement {
                 .flap-front {
                     /* Matches .top segment perfectly */
                     height: calc(100% - 1px);
-                    background: linear-gradient(to bottom, #333 0%, #222 100%);
+                    background: linear-gradient(to bottom, #333 0%, #1a1a1a 90%, #000 100%);
                     z-index: 2;
                 }
 
                 .flap-back {
                     transform: rotateX(180deg);
-                    /* Matches .bottom segment perfectly AFTER landing */
+                    /* Matches .bottom segment perfectly after 180 flip */
                     height: calc(100% - 1px);
-                    background: linear-gradient(to bottom, #1d1d1d 0%, #111 100%);
+                    background: linear-gradient(to bottom, #000 10%, #1a1a1a 100%);
                     z-index: 1;
                 }
 
@@ -157,10 +157,9 @@ export class FlapDigit extends HTMLElement {
                 /* Target Gradient Overlay for physical cross-fade */
                 .gradient-overlay {
                     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-                    /* Initial: Match Top Segment look as it starts to fall */
-                    /* Room-Edge (#333) is at Div-Top. Room-Hinge (#222) is at Div-Bottom. */
-                    background: linear-gradient(to bottom, #333 0%, #222 100%);
-                    opacity: 0; /* Default: Hidden (matching resting bottom state) */
+                    /* Initial: Match falling top half (#333 -> #000) */
+                    background: linear-gradient(to bottom, #333 0%, #000 100%);
+                    opacity: 0;
                     z-index: 5;
                     pointer-events: none;
                 }
@@ -197,16 +196,14 @@ export class FlapDigit extends HTMLElement {
                 @keyframes shadow-fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
                 @keyframes shadow-fade-out { 0% { opacity: 1; } 100% { opacity: 0; } }
 
-                /* Solid Mechanical Hinge */
+                /* Standardized Hinge Junction */
                 .hinge {
                     position: absolute;
                     top: 50%; left: 0; width: 100%; height: 2px;
                     background: #111;
                     z-index: 20;
                     transform: translateY(-50%);
-                    box-shadow: 
-                        0 1px 1px rgba(255,255,255,0.05),
-                        0 -1px 1px rgba(0,0,0,0.4);
+                    /* Masking shadow to bridge any sub-pixel gaps */
                 }
             </style>
             <div id="digit-container" class="flap-container">
