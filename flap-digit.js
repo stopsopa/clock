@@ -29,7 +29,6 @@ export class FlapDigit extends HTMLElement {
 
     connectedCallback() {
         this._render();
-        // Ensure values are synced after render
         this._syncAllText(this._digit);
     }
 
@@ -91,7 +90,7 @@ export class FlapDigit extends HTMLElement {
                     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
                 }
 
-                /* Fixed backgrounds for static parts */
+                /* Fixed backgrounds - These MUST match the start/end states of the flap perfectly */
                 .top {
                     top: 0;
                     border-top-left-radius: 6px;
@@ -140,50 +139,59 @@ export class FlapDigit extends HTMLElement {
                 }
 
                 .flap-front {
+                    /* Matches .top segment perfectly */
                     background: linear-gradient(to bottom, #333 0%, #222 100%);
                     z-index: 2;
                 }
 
                 .flap-back {
                     transform: rotateX(180deg);
-                    /* Targeted landing style (Dark Bottom) */
-                    background: linear-gradient(to top, #1d1d1d 0%, #111 100%);
+                    /* At the end of the flip (-180 parent + 180 child), this side is UPRIGHT. */
+                    /* So its local coordinates match the room coordinates perfectly. */
+                    /* Matching .bottom segment: Hinge (#1d1d1d) -> Edge (#111) */
+                    background: linear-gradient(to bottom, #1d1d1d 0%, #111 100%);
                     z-index: 1;
+                    /* Same hinge highlight as the static bottom segment */
+                    border-top: 0.5px solid rgba(255,255,255,0.03);
                 }
 
                 .flap-front .text { top: 0; }
                 .flap-back .text { bottom: 0; }
 
-                /* Target Gradient Overlay for cross-fade */
+                /* Target Gradient Overlay for physical cross-fade */
                 .gradient-overlay {
-                    position: absolute;
-                    top: 0; left: 0; width: 100%; height: 100%;
-                    background: linear-gradient(to top, #333 0%, #222 100%);
-                    opacity: 0; /* Default: Hidden (dark) - matches its landing state */
+                    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                    /* Initial: Match Top Segment look as it starts to fall */
+                    /* At start, div is inverted. Div-Top is at Room-Bottom (#222). */
+                    /* Div-Bottom is at Room-Top (#333). */
+                    /* to bottom: Div-Top (#222) -> Div-Bottom (#333) results in Room-Top brighter. */
+                    background: linear-gradient(to bottom, #222 0%, #333 100%);
+                    opacity: 0; /* Default: Hidden (matching resting bottom state) */
                     z-index: 5;
                     pointer-events: none;
                 }
 
+                /* During flip, the back of the flap starts bright and fades to dark */
                 .flipping .flap-back .gradient-overlay {
                     animation: gradient-crossfade 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
                 }
 
                 @keyframes gradient-crossfade {
-                    0% { opacity: 1; }  /* Start as bright (Top style) */
-                    100% { opacity: 0; } /* End as dark (revealing Bottom style background) */
+                    0% { opacity: 1; }  /* Start bright (top segment style) */
+                    100% { opacity: 0; } /* End hidden (revealing the dark bottom) */
                 }
 
                 /* Unified Shadow logic */
                 .shadow {
                     position: absolute;
                     top: 0; left: 0; width: 100%; height: 100%;
-                    background: black;
+                    background: #000;
                     pointer-events: none;
                     z-index: 10;
                     opacity: 0;
                 }
                 
-                /* Animations only on the moving parts to ensure zero flicker on static parts */
+                /* Animation Shadows - No static part animations to prevent pulsing */
                 .flipping .flap-front .shadow {
                     animation: shadow-fade-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
                 }
@@ -198,10 +206,7 @@ export class FlapDigit extends HTMLElement {
                 /* Subtle Hinge Detail */
                 .hinge {
                     position: absolute;
-                    top: 50%;
-                    left: 0;
-                    width: 100%;
-                    height: 3px;
+                    top: 50%; left: 0; width: 100%; height: 3px;
                     background: #111;
                     z-index: 20;
                     transform: translateY(-50%);
@@ -269,15 +274,15 @@ export class FlapDigit extends HTMLElement {
         flapBack.textContent = this._digit;
 
         container.classList.remove('flipping');
-        void container.offsetWidth; 
+        void container.offsetWidth; // Force reflow
         container.classList.add('flipping');
 
-        // We use exactly 600ms to snap at the absolute end of the CSS animation
+        // We use 580ms to snap just before the physical completion to ensure a seamless handoff
         this._animationTimeout = setTimeout(() => {
             this._syncAllText(this._digit);
             container.classList.remove('flipping');
             this._animationTimeout = null;
-        }, 600); 
+        }, 580); 
     }
 }
 
