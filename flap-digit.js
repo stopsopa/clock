@@ -49,7 +49,7 @@ export class FlapDigit extends HTMLElement {
                     position: relative;
                     width: 100px;
                     height: 140px;
-                    perspective: 400px;
+                    perspective: 500px;
                     background-color: transparent;
                 }
 
@@ -60,7 +60,7 @@ export class FlapDigit extends HTMLElement {
                     transform-style: preserve-3d;
                     background-color: #1a1a1a;
                     border-radius: 6px;
-                    box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.8);
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.5);
                 }
 
                 .segment {
@@ -69,7 +69,7 @@ export class FlapDigit extends HTMLElement {
                     width: 100%;
                     height: 50%;
                     background: #222;
-                    color: #d0d0d0;
+                    color: #f0f0f0;
                     overflow: hidden;
                     display: flex;
                     justify-content: center;
@@ -91,20 +91,21 @@ export class FlapDigit extends HTMLElement {
                     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
                 }
 
+                /* Fixed backgrounds for static parts */
                 .top {
                     top: 0;
                     border-top-left-radius: 6px;
                     border-top-right-radius: 6px;
-                    border-bottom: 1px solid rgba(0,0,0,0.4);
-                    background: linear-gradient(to bottom, #2c2c2c 0%, #222 100%);
+                    border-bottom: 0.5px solid rgba(0,0,0,0.5);
+                    background: linear-gradient(to bottom, #333 0%, #222 100%);
                 }
 
                 .bottom {
                     bottom: 0;
                     border-bottom-left-radius: 6px;
                     border-bottom-right-radius: 6px;
-                    border-top: 1px solid rgba(255,255,255,0.05);
-                    background: linear-gradient(to bottom, #1a1a1a 0%, #111 100%);
+                    border-top: 0.5px solid rgba(255,255,255,0.03);
+                    background: linear-gradient(to bottom, #1d1d1d 0%, #111 100%);
                 }
 
                 .top .text { top: 0; }
@@ -113,10 +114,7 @@ export class FlapDigit extends HTMLElement {
                 /* 3D Flap */
                 .flap {
                     position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 50%;
+                    top: 0; left: 0; width: 100%; height: 50%;
                     z-index: 5;
                     transform-style: preserve-3d;
                     transform-origin: bottom;
@@ -135,55 +133,57 @@ export class FlapDigit extends HTMLElement {
 
                 .flap-front, .flap-back {
                     position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
+                    top: 0; left: 0; width: 100%; height: 100%;
                     backface-visibility: hidden;
                     border-radius: 6px;
                     overflow: hidden;
                 }
 
                 .flap-front {
-                    background: linear-gradient(to bottom, #2c2c2c 0%, #222 100%);
+                    background: linear-gradient(to bottom, #333 0%, #222 100%);
                     z-index: 2;
                 }
 
                 .flap-back {
                     transform: rotateX(180deg);
-                    background: linear-gradient(to top, #1a1a1a 0%, #111 100%);
+                    /* Targeted landing style (Dark Bottom) */
+                    background: linear-gradient(to top, #1d1d1d 0%, #111 100%);
                     z-index: 1;
                 }
 
                 .flap-front .text { top: 0; }
                 .flap-back .text { bottom: 0; }
 
-                /* Shadow logic for 3D effect */
+                /* Target Gradient Overlay for cross-fade */
+                .gradient-overlay {
+                    position: absolute;
+                    top: 0; left: 0; width: 100%; height: 100%;
+                    background: linear-gradient(to top, #333 0%, #222 100%);
+                    opacity: 0; /* Default: Hidden (dark) - matches its landing state */
+                    z-index: 5;
+                    pointer-events: none;
+                }
+
+                .flipping .flap-back .gradient-overlay {
+                    animation: gradient-crossfade 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                }
+
+                @keyframes gradient-crossfade {
+                    0% { opacity: 1; }  /* Start as bright (Top style) */
+                    100% { opacity: 0; } /* End as dark (revealing Bottom style background) */
+                }
+
+                /* Unified Shadow logic */
                 .shadow {
                     position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
+                    top: 0; left: 0; width: 100%; height: 100%;
                     background: black;
-                    opacity: 0;
                     pointer-events: none;
                     z-index: 10;
+                    opacity: 0;
                 }
-
-                .bottom-static .shadow {
-                    opacity: 0.1; /* Constant subtle shadow at hinge */
-                }
-
-                /* Animation state: shadows sync with rotation */
-                .flipping .top-static .shadow {
-                    animation: shadow-reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-                }
-
-                .flipping .bottom-static .shadow {
-                    animation: shadow-cover 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-                }
-
+                
+                /* Animations only on the moving parts to ensure zero flicker on static parts */
                 .flipping .flap-front .shadow {
                     animation: shadow-fade-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
                 }
@@ -192,36 +192,20 @@ export class FlapDigit extends HTMLElement {
                     animation: shadow-fade-out 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
                 }
 
-                @keyframes shadow-reveal {
-                    0% { opacity: 0.8; }
-                    100% { opacity: 0; }
-                }
+                @keyframes shadow-fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
+                @keyframes shadow-fade-out { 0% { opacity: 1; } 100% { opacity: 0; } }
 
-                @keyframes shadow-cover {
-                    0% { opacity: 0.1; }
-                    100% { opacity: 0.8; }
-                }
-
-                @keyframes shadow-fade-in {
-                    0% { opacity: 0; }
-                    100% { opacity: 1; }
-                }
-
-                @keyframes shadow-fade-out {
-                    0% { opacity: 1; }
-                    100% { opacity: 0; }
-                }
-
-                /* Center line hinge decoration */
+                /* Subtle Hinge Detail */
                 .hinge {
                     position: absolute;
                     top: 50%;
                     left: 0;
                     width: 100%;
                     height: 3px;
-                    background: #000;
+                    background: #111;
                     z-index: 20;
                     transform: translateY(-50%);
+                    box-shadow: 0 1px 1px rgba(255,255,255,0.05);
                 }
             </style>
             <div id="digit-container" class="flap-container">
@@ -240,6 +224,7 @@ export class FlapDigit extends HTMLElement {
                     </div>
                     <div class="flap-back segment bottom">
                         <div class="text" id="flap-back-text">${this._digit}</div>
+                        <div class="gradient-overlay"></div>
                         <div class="shadow"></div>
                     </div>
                 </div>
@@ -287,11 +272,12 @@ export class FlapDigit extends HTMLElement {
         void container.offsetWidth; 
         container.classList.add('flipping');
 
+        // We use exactly 600ms to snap at the absolute end of the CSS animation
         this._animationTimeout = setTimeout(() => {
             this._syncAllText(this._digit);
             container.classList.remove('flipping');
             this._animationTimeout = null;
-        }, 600);
+        }, 600); 
     }
 }
 
