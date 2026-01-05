@@ -44,6 +44,8 @@ header {
   align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 h1 {
@@ -62,6 +64,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .control-group {
@@ -252,16 +255,79 @@ flap-digit {
 }
 
 @media (max-width: 500px) {
-  .clock {
+  .app-container {
+    padding: 1rem;
+    gap: 1.5rem;
+    width: 100vw;
+    overflow-x: hidden;
+  }
+  header {
     flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .controls {
+    flex-direction: column;
+    gap: 0.8rem;
+    width: 100%;
+  }
+  .control-group.sliders {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+  .slider-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     gap: 1rem;
   }
-  .separator {
+  .slider-item label {
+    margin-bottom: 0;
+    min-width: 60px;
+    font-size: 0.5rem;
+    opacity: 0.2;
+  }
+  input[type="range"] {
+    flex-grow: 1;
+    width: auto;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 2px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    width: 6px;
+    height: 6px;
+    margin-top: -6px;
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+  }
+  .divider {
     display: none;
   }
-  flap-digit {
-    width: 100px;
-    height: 140px;
+  .clock {
+    gap: 0.2rem;
+    transform: scale(0.9);
+    margin-top: 1rem;
   }
+  .ampm-label {
+    right: 0;
+    bottom: -30px;
+    font-size: 0.7rem;
+  }
+  .separator {
+    font-size: 2rem;
+    margin-top: -5px;
+    line-height: 1;
+  }
+  flap-digit {
+    width: 42px !important;
+    height: 60px !important;
+  }
+}
+
+body:not(.bg-enabled) .separator {
+  color: #000;
+  opacity: 0.6;
 }
 
