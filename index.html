@@ -12,7 +12,7 @@
 <body>
     <div class="app-container">
         <header>
-            <h1>SPLIT-FLAP</h1>
+            <a href="." id="reset-link" class="reset-link"><h1>SPLIT-FLAP</h1></a>
             <div class="controls">
                 <div class="control-group">
                     <label class="toggle-container">
@@ -103,16 +103,21 @@
         const s2 = document.getElementById('s2');
         const ampmLabel = document.getElementById('ampm');
         const formatRadios = document.getElementsByName('format');
+        const widthSlider = document.getElementById('width');
+        const heightSlider = document.getElementById('height');
+        const offsetSlider = document.getElementById('v-offset');
+        const fontSelect = document.getElementById('font-select');
 
-        let is24h = true;
+        // 1. Collect Defaults
+        const DEFAULTS = {
+            format: Array.from(formatRadios).find(r => r.checked)?.value || '24',
+            width: widthSlider.value,
+            height: heightSlider.value,
+            'v-offset': offsetSlider.value,
+            fontIndex: fontSelect.selectedIndex.toString()
+        };
 
-        formatRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                is24h = e.target.value === '24';
-                updateClock(true); // Force update
-                ampmLabel.style.display = is24h ? 'none' : 'block';
-            });
-        });
+        let is24h = DEFAULTS.format === '24';
 
         function updateClock(force = false) {
             const now = new Date();
@@ -146,12 +151,6 @@
         }
 
         setInterval(() => updateClock(), 1000);
-        updateClock(true);
-
-        const widthSlider = document.getElementById('width');
-        const heightSlider = document.getElementById('height');
-        const offsetSlider = document.getElementById('v-offset');
-        const fontSelect = document.getElementById('font-select');
 
         function syncSliderStyles() {
             const w = widthSlider.value + 'px';
@@ -169,16 +168,75 @@
                     d.removeAttribute('font');
                 }
             });
+            updateUrlFromState();
         }
+
+        // 2. Sync State to URL
+        function updateUrlFromState() {
+            const params = new URLSearchParams();
+            
+            const currentFormat = Array.from(formatRadios).find(r => r.checked)?.value;
+            if (currentFormat !== DEFAULTS.format) params.set('format', currentFormat);
+            
+            if (widthSlider.value !== DEFAULTS.width) params.set('width', widthSlider.value);
+            if (heightSlider.value !== DEFAULTS.height) params.set('height', heightSlider.value);
+            if (offsetSlider.value !== DEFAULTS['v-offset']) params.set('v-offset', offsetSlider.value);
+            
+            const currentFontIndex = fontSelect.selectedIndex.toString();
+            if (currentFontIndex !== DEFAULTS.fontIndex) params.set('fontIndex', currentFontIndex);
+
+            const search = params.toString();
+            const newUrl = window.location.pathname + (search ? '?' + search : '');
+            if (window.location.search !== (search ? '?' + search : '')) {
+                window.history.replaceState({}, '', newUrl);
+            }
+        }
+
+        // 3. Load from URL (Overlay)
+        function loadFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            
+            if (params.has('format')) {
+                const val = params.get('format');
+                const radio = Array.from(formatRadios).find(r => r.value === val);
+                if (radio) radio.checked = true;
+            }
+            
+            if (params.has('width')) widthSlider.value = params.get('width');
+            if (params.has('height')) heightSlider.value = params.get('height');
+            if (params.has('v-offset')) offsetSlider.value = params.get('v-offset');
+            if (params.has('fontIndex')) {
+                const idx = parseInt(params.get('fontIndex'), 10);
+                if (!isNaN(idx) && idx >= 0 && idx < fontSelect.options.length) {
+                    fontSelect.selectedIndex = idx;
+                }
+            }
+
+            // Sync internal state
+            is24h = Array.from(formatRadios).find(r => r.checked)?.value === '24';
+            ampmLabel.style.display = is24h ? 'none' : 'block';
+            syncSliderStyles();
+            updateClock(true);
+        }
+
+        formatRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                is24h = e.target.value === '24';
+                ampmLabel.style.display = is24h ? 'none' : 'block';
+                updateClock(true);
+                updateUrlFromState();
+            });
+        });
 
         widthSlider.addEventListener('input', syncSliderStyles);
         heightSlider.addEventListener('input', syncSliderStyles);
         offsetSlider.addEventListener('input', syncSliderStyles);
         fontSelect.addEventListener('change', syncSliderStyles);
 
-        // Initial sizing trigger
+        // Initial setup
         window.addEventListener('load', () => {
-            syncSliderStyles();
+            document.getElementById('reset-link').href = window.location.origin + window.location.pathname;
+            loadFromUrl();
         });
     </script>
 </body>
