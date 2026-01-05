@@ -179,12 +179,6 @@
         // Initial sizing trigger
         window.addEventListener('load', () => {
             syncSliderStyles();
-            const digits = document.querySelectorAll('flap-digit');
-            digits.forEach(d => d._updateFontScaling && d._updateFontScaling());
-        });
-        window.addEventListener('resize', () => {
-             const digits = document.querySelectorAll('flap-digit');
-            digits.forEach(d => d._updateFontScaling && d._updateFontScaling());
         });
     </script>
 </body>

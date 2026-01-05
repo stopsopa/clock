@@ -20,9 +20,9 @@ export class FlapDigit extends HTMLElement {
             this._prevDigit = old;
             this._digit = val;
 
-            if (oldValue !== null && this.shadowRoot && this.shadowRoot.getElementById('digit-container')) {
+            if (oldValue !== null && this.shadowRoot && this._container) {
                 this._animate();
-            } else if (this.shadowRoot && this.shadowRoot.getElementById('digit-container')) {
+            } else if (this.shadowRoot && this._container) {
                 this._syncAllText(this._digit);
             }
         } else if (name === 'font' && oldValue !== newValue) {
@@ -44,11 +44,11 @@ export class FlapDigit extends HTMLElement {
     }
 
     _syncAllText(val) {
-        const ids = ['top-static', 'bottom-static', 'flap-front-text', 'flap-back-text'];
-        ids.forEach(id => {
-            const el = this.shadowRoot.getElementById(id);
-            if (el) el.textContent = val;
-        });
+        if (!this._elements) return;
+        this._elements.topStatic.textContent = val;
+        this._elements.bottomStatic.textContent = val;
+        this._elements.flapFrontText.textContent = val;
+        this._elements.flapBackText.textContent = val;
     }
 
     _updateFont() {
@@ -251,62 +251,67 @@ export class FlapDigit extends HTMLElement {
                 <div class="hinge"></div>
             </div>
         `;
+        
+        // Cache DOM references
+        this._container = this.shadowRoot.getElementById('digit-container');
+        this._elements = {
+            topStatic: this.shadowRoot.getElementById('top-static'),
+            bottomStatic: this.shadowRoot.getElementById('bottom-static'),
+            flapFrontText: this.shadowRoot.getElementById('flap-front-text'),
+            flapBackText: this.shadowRoot.getElementById('flap-back-text'),
+            texts: this.shadowRoot.querySelectorAll('.text')
+        };
+
         this._updateFontScaling();
     }
 
     _updateFontScaling() {
-        const height = this.offsetHeight;
-        const width = this.offsetWidth;
-        if (!height || !width) return;
+        if (this._scalingRequested) return;
+        this._scalingRequested = true;
 
-        const texts = this.shadowRoot.querySelectorAll('.text');
-        // Font size should be slightly smaller than the container height/width
-        const fontSize = Math.min(height * 0.85, width * 1.1);
-        
-        const hfont = parseFloat(this.getAttribute('hfont')) || 0;
-        // Map -100 to 100 range to a percentage of font size
-        // 100 means move down by font size, -100 means move up by font size
-        // Actually the user wants to "control height of the font", usually meaning vertical offset.
-        // Let's use it as a percentage shift.
-        const verticalOffset = (hfont / 100) * (fontSize * 0.5);
+        requestAnimationFrame(() => {
+            this._scalingRequested = false;
+            const height = this.offsetHeight;
+            const width = this.offsetWidth;
+            if (!height || !width || !this._elements) return;
 
-        texts.forEach(t => {
-            t.style.height = `${height}px`;
-            t.style.lineHeight = `${height}px`;
-            t.style.fontSize = `${fontSize}px`;
-            t.style.transform = `translateY(${verticalOffset}px)`;
+            // Font size should be slightly smaller than the container height/width
+            const fontSize = Math.min(height * 0.85, width * 1.1);
+            
+            const hfont = parseFloat(this.getAttribute('hfont')) || 0;
+            const verticalOffset = (hfont / 100) * (fontSize * 0.5);
+
+            this._elements.texts.forEach(t => {
+                t.style.height = `${height}px`;
+                t.style.lineHeight = `${height}px`;
+                t.style.fontSize = `${fontSize}px`;
+                t.style.transform = `translateY(${verticalOffset}px)`;
+            });
         });
     }
 
     _animate() {
-        if (this._digit === this._prevDigit) return;
-
-        const container = this.shadowRoot.getElementById('digit-container');
-        if (!container) return;
-
-        const topStatic = this.shadowRoot.getElementById('top-static');
-        const bottomStatic = this.shadowRoot.getElementById('bottom-static');
-        const flapFront = this.shadowRoot.getElementById('flap-front-text');
-        const flapBack = this.shadowRoot.getElementById('flap-back-text');
+        if (this._digit === this._prevDigit || !this._container) return;
 
         if (this._animationTimeout) {
             clearTimeout(this._animationTimeout);
+            this._syncAllText(this._prevDigit); // Sync to old value first to ensure consistent state
+            this._container.classList.remove('flipping');
+            void this._container.offsetWidth;
         }
 
         // Setup for flip
-        topStatic.textContent = this._digit;
-        bottomStatic.textContent = this._prevDigit;
-        flapFront.textContent = this._prevDigit;
-        flapBack.textContent = this._digit;
+        this._elements.topStatic.textContent = this._digit;
+        this._elements.bottomStatic.textContent = this._prevDigit;
+        this._elements.flapFrontText.textContent = this._prevDigit;
+        this._elements.flapBackText.textContent = this._digit;
 
-        container.classList.remove('flipping');
-        void container.offsetWidth; // Force reflow
-        container.classList.add('flipping');
+        this._container.classList.add('flipping');
 
         // Snap at exactly 600ms to match the CSS animation completion
         this._animationTimeout = setTimeout(() => {
             this._syncAllText(this._digit);
-            container.classList.remove('flipping');
+            this._container.classList.remove('flipping');
             this._animationTimeout = null;
         }, 600); 
     }
