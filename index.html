@@ -14,14 +14,27 @@
         <header>
             <h1>SPLIT-FLAP</h1>
             <div class="controls">
-                <label class="toggle-container">
-                    <input type="radio" name="format" value="24" checked>
-                    <span class="label-text">24H</span>
-                </label>
-                <label class="toggle-container">
-                    <input type="radio" name="format" value="12">
-                    <span class="label-text">12H</span>
-                </label>
+                <div class="control-group">
+                    <label class="toggle-container">
+                        <input type="radio" name="format" value="24" checked>
+                        <span class="label-text">24H</span>
+                    </label>
+                    <label class="toggle-container">
+                        <input type="radio" name="format" value="12">
+                        <span class="label-text">12H</span>
+                    </label>
+                </div>
+                <div class="divider"></div>
+                <div class="control-group sliders">
+                    <div class="slider-item">
+                        <label for="width">WIDTH</label>
+                        <input type="range" id="width" min="60" max="300" value="100">
+                    </div>
+                    <div class="slider-item">
+                        <label for="height">HEIGHT</label>
+                        <input type="range" id="height" min="80" max="400" value="140">
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -105,8 +118,25 @@
         setInterval(() => updateClock(), 1000);
         updateClock(true);
 
+        const widthSlider = document.getElementById('width');
+        const heightSlider = document.getElementById('height');
+
+        function syncSliderStyles() {
+            const w = widthSlider.value + 'px';
+            const h = heightSlider.value + 'px';
+            const digits = document.querySelectorAll('flap-digit');
+            digits.forEach(d => {
+                d.style.width = w;
+                d.style.height = h;
+            });
+        }
+
+        widthSlider.addEventListener('input', syncSliderStyles);
+        heightSlider.addEventListener('input', syncSliderStyles);
+
         // Initial sizing trigger
         window.addEventListener('load', () => {
+            syncSliderStyles();
             const digits = document.querySelectorAll('flap-digit');
             digits.forEach(d => d._updateFontScaling && d._updateFontScaling());
         });
