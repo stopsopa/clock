@@ -5,6 +5,7 @@ export class FlapDigit extends HTMLElement {
         this._digit = '0';
         this._prevDigit = '0';
         this._isAnimating = false;
+        this._resizeObserver = new ResizeObserver(() => this._updateFontScaling());
     }
 
     static get observedAttributes() {
@@ -30,6 +31,11 @@ export class FlapDigit extends HTMLElement {
     connectedCallback() {
         this._render();
         this._syncAllText(this._digit);
+        this._resizeObserver.observe(this);
+    }
+
+    disconnectedCallback() {
+        this._resizeObserver.disconnect();
     }
 
     _syncAllText(val) {
@@ -136,7 +142,7 @@ export class FlapDigit extends HTMLElement {
                     overflow: hidden;
                 }
 
-                .flap-front {
+                 .flap-front {
                     /* Matches .top segment perfectly */
                     height: calc(100% - 1px);
                     background: linear-gradient(to bottom, #333 0%, #1a1a1a 90%, #000 100%);
@@ -203,7 +209,8 @@ export class FlapDigit extends HTMLElement {
                     background: #111;
                     z-index: 20;
                     transform: translateY(-50%);
-                    /* Masking shadow to bridge any sub-pixel gaps */
+                    /* Subtle depth shadow */
+                    box-shadow: 0 1px 1px rgba(255,255,255,0.05);
                 }
             </style>
             <div id="digit-container" class="flap-container">
@@ -233,10 +240,13 @@ export class FlapDigit extends HTMLElement {
     }
 
     _updateFontScaling() {
-        const height = this.offsetHeight || 140;
-        const width = this.offsetWidth || 100;
+        const height = this.offsetHeight;
+        const width = this.offsetWidth;
+        if (!height || !width) return;
+
         const texts = this.shadowRoot.querySelectorAll('.text');
-        const fontSize = Math.min(height * 0.8, width * 1.2);
+        // Font size should be slightly smaller than the container height/width
+        const fontSize = Math.min(height * 0.85, width * 1.1);
         
         texts.forEach(t => {
             t.style.height = `${height}px`;
