@@ -90,23 +90,23 @@ export class FlapDigit extends HTMLElement {
                     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
                 }
 
-                /* Fixed backgrounds - These MUST match the start/end states of the flap perfectly */
+                /* Fixed backgrounds */
                 .top {
                     top: 0;
+                    height: calc(50% - 1px);
                     border-top-left-radius: 6px;
                     border-top-right-radius: 6px;
-                    border-bottom: 0.5px solid rgba(0,0,0,0.5);
                     background: linear-gradient(to bottom, #333 0%, #222 100%);
                 }
-
+ 
                 .bottom {
                     bottom: 0;
+                    height: calc(50% - 1px);
                     border-bottom-left-radius: 6px;
                     border-bottom-right-radius: 6px;
-                    border-top: 0.5px solid rgba(255,255,255,0.03);
                     background: linear-gradient(to bottom, #1d1d1d 0%, #111 100%);
                 }
-
+ 
                 .top .text { top: 0; }
                 .bottom .text { bottom: 0; }
 
@@ -131,28 +131,24 @@ export class FlapDigit extends HTMLElement {
                 }
 
                 .flap-front, .flap-back {
-                    position: absolute;
-                    top: 0; left: 0; width: 100%; height: 100%;
+                    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
                     backface-visibility: hidden;
-                    border-radius: 6px;
                     overflow: hidden;
                 }
 
                 .flap-front {
                     /* Matches .top segment perfectly */
+                    height: calc(100% - 1px);
                     background: linear-gradient(to bottom, #333 0%, #222 100%);
                     z-index: 2;
                 }
 
                 .flap-back {
                     transform: rotateX(180deg);
-                    /* At the end of the flip (-180 parent + 180 child), this side is UPRIGHT. */
-                    /* So its local coordinates match the room coordinates perfectly. */
-                    /* Matching .bottom segment: Hinge (#1d1d1d) -> Edge (#111) */
+                    /* Matches .bottom segment perfectly AFTER landing */
+                    height: calc(100% - 1px);
                     background: linear-gradient(to bottom, #1d1d1d 0%, #111 100%);
                     z-index: 1;
-                    /* Same hinge highlight as the static bottom segment */
-                    border-top: 0.5px solid rgba(255,255,255,0.03);
                 }
 
                 .flap-front .text { top: 0; }
@@ -162,10 +158,8 @@ export class FlapDigit extends HTMLElement {
                 .gradient-overlay {
                     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
                     /* Initial: Match Top Segment look as it starts to fall */
-                    /* At start, div is inverted. Div-Top is at Room-Bottom (#222). */
-                    /* Div-Bottom is at Room-Top (#333). */
-                    /* to bottom: Div-Top (#222) -> Div-Bottom (#333) results in Room-Top brighter. */
-                    background: linear-gradient(to bottom, #222 0%, #333 100%);
+                    /* Room-Edge (#333) is at Div-Top. Room-Hinge (#222) is at Div-Bottom. */
+                    background: linear-gradient(to bottom, #333 0%, #222 100%);
                     opacity: 0; /* Default: Hidden (matching resting bottom state) */
                     z-index: 5;
                     pointer-events: none;
@@ -203,14 +197,16 @@ export class FlapDigit extends HTMLElement {
                 @keyframes shadow-fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
                 @keyframes shadow-fade-out { 0% { opacity: 1; } 100% { opacity: 0; } }
 
-                /* Subtle Hinge Detail */
+                /* Solid Mechanical Hinge */
                 .hinge {
                     position: absolute;
-                    top: 50%; left: 0; width: 100%; height: 3px;
+                    top: 50%; left: 0; width: 100%; height: 2px;
                     background: #111;
                     z-index: 20;
                     transform: translateY(-50%);
-                    box-shadow: 0 1px 1px rgba(255,255,255,0.05);
+                    box-shadow: 
+                        0 1px 1px rgba(255,255,255,0.05),
+                        0 -1px 1px rgba(0,0,0,0.4);
                 }
             </style>
             <div id="digit-container" class="flap-container">
@@ -277,12 +273,12 @@ export class FlapDigit extends HTMLElement {
         void container.offsetWidth; // Force reflow
         container.classList.add('flipping');
 
-        // We use 580ms to snap just before the physical completion to ensure a seamless handoff
+        // Snap at exactly 600ms to match the CSS animation completion
         this._animationTimeout = setTimeout(() => {
             this._syncAllText(this._digit);
             container.classList.remove('flipping');
             this._animationTimeout = null;
-        }, 580); 
+        }, 600); 
     }
 }
 
