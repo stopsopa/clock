@@ -67,6 +67,11 @@ h1 {
   flex-wrap: wrap;
 }
 
+.controls-hidden .controls,
+.controls-hidden .divider {
+  display: none;
+}
+
 .control-group {
   display: flex;
   gap: 1rem;

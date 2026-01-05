@@ -114,6 +114,8 @@
         const offsetSlider = document.getElementById('v-offset');
         const fontSelect = document.getElementById('font-select');
         const lightToggle = document.getElementById('light-toggle');
+        const header = document.querySelector('header');
+        const clockContainer = document.querySelector('.clock');
 
         // 1. Collect Defaults
         const DEFAULTS = {
@@ -122,7 +124,8 @@
             height: heightSlider.value,
             'v-offset': offsetSlider.value,
             fontIndex: fontSelect.selectedIndex.toString(),
-            light: lightToggle.checked
+            light: lightToggle.checked,
+            hide: false
         };
 
         let is24h = DEFAULTS.format === '24';
@@ -202,6 +205,9 @@
             if (currentFontIndex !== DEFAULTS.fontIndex) params.set('fontIndex', currentFontIndex);
 
             if (lightToggle.checked !== DEFAULTS.light) params.set('light', '1');
+            
+            const isHidden = header.classList.contains('controls-hidden');
+            if (isHidden !== DEFAULTS.hide) params.set('hide', 'true');
 
             const search = params.toString();
             const newUrl = window.location.pathname + (search ? '?' + search : '');
@@ -232,6 +238,13 @@
             if (params.has('light')) {
                 lightToggle.checked = params.get('light') === '1';
             }
+            if (params.has('hide')) {
+                if (params.get('hide') === 'true') {
+                    header.classList.add('controls-hidden');
+                } else {
+                    header.classList.remove('controls-hidden');
+                }
+            }
 
             // Sync internal state
             is24h = Array.from(formatRadios).find(r => r.checked)?.value === '24';
@@ -254,6 +267,11 @@
         offsetSlider.addEventListener('input', syncSliderStyles);
         fontSelect.addEventListener('change', syncSliderStyles);
         lightToggle.addEventListener('change', syncSliderStyles);
+
+        clockContainer.addEventListener('click', () => {
+            header.classList.toggle('controls-hidden');
+            updateUrlFromState();
+        });
 
         // Initial setup
         window.addEventListener('load', () => {
