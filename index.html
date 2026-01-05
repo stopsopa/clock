@@ -70,6 +70,10 @@
                         <input type="checkbox" id="light-toggle">
                         <span class="label-text">LIGHT</span>
                     </label>
+                    <label class="toggle-container">
+                        <input type="checkbox" id="fullscreen-toggle">
+                        <span class="label-text">FULLSCREEN</span>
+                    </label>
                 </div>
             </div>
         </header>
@@ -114,6 +118,7 @@
         const offsetSlider = document.getElementById('v-offset');
         const fontSelect = document.getElementById('font-select');
         const lightToggle = document.getElementById('light-toggle');
+        const fullscreenToggle = document.getElementById('fullscreen-toggle');
         const header = document.querySelector('header');
         const clockContainer = document.querySelector('.clock');
 
@@ -268,9 +273,38 @@
         fontSelect.addEventListener('change', syncSliderStyles);
         lightToggle.addEventListener('change', syncSliderStyles);
 
+        function toggleFullscreen() {
+            if (document.fullscreenElement) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            } else {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            }
+        }
+
+        fullscreenToggle.addEventListener('change', toggleFullscreen);
+
+        // Update toggle state if fullscreen is exited via Esc key
+        document.addEventListener('fullscreenchange', () => {
+            fullscreenToggle.checked = !!document.fullscreenElement;
+        });
+
+        let clickTimer = null;
         clockContainer.addEventListener('click', () => {
-            header.classList.toggle('controls-hidden');
-            updateUrlFromState();
+            if (clickTimer === null) {
+                clickTimer = setTimeout(() => {
+                    header.classList.toggle('controls-hidden');
+                    updateUrlFromState();
+                    clickTimer = null;
+                }, 300); // Wait 300ms for a second click
+            } else {
+                clearTimeout(clickTimer);
+                clickTimer = null;
+                toggleFullscreen();
+            }
         });
 
         // Initial setup
