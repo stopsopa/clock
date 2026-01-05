@@ -175,80 +175,25 @@ export class FlapDigit extends HTMLElement {
                 .flap-front .text { top: 0; }
                 .flap-back .text { bottom: 0; }
 
-                /* Target Gradient Overlay for physical cross-fade */
-                .gradient-overlay {
-                    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-                    /* Initial: Match falling top half (#333 -> #000) */
-                    background: linear-gradient(to bottom, #333 0%, #000 100%);
-                    opacity: 0;
-                    z-index: 5;
-                    pointer-events: none;
-                }
 
-                /* During flip, the back of the flap starts bright and fades to dark */
-                .flipping .flap-back .gradient-overlay {
-                    animation: gradient-crossfade 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-                }
 
-                @keyframes gradient-crossfade {
-                    0% { opacity: 1; }  /* Start bright (top segment style) */
-                    100% { opacity: 0; } /* End hidden (revealing the dark bottom) */
-                }
 
-                /* Unified Shadow logic */
-                .shadow {
-                    position: absolute;
-                    top: 0; left: 0; width: 100%; height: 100%;
-                    background: #000;
-                    pointer-events: none;
-                    z-index: 10;
-                    opacity: 0;
-                }
-                
-                /* Animation Shadows - No static part animations to prevent pulsing */
-                .flipping .flap-front .shadow {
-                    animation: shadow-fade-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-                }
-
-                .flipping .flap-back .shadow {
-                    animation: shadow-fade-out 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-                }
-
-                @keyframes shadow-fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
-                @keyframes shadow-fade-out { 0% { opacity: 1; } 100% { opacity: 0; } }
-
-                /* Standardized Hinge Junction */
-                .hinge {
-                    position: absolute;
-                    top: 50%; left: 0; width: 100%; height: 2px;
-                    background: #111;
-                    z-index: 20;
-                    transform: translateY(-50%);
-                    /* Subtle depth shadow */
-                    box-shadow: 0 1px 1px rgba(255,255,255,0.05);
-                }
             </style>
             <div id="digit-container" class="flap-container">
                 <div class="segment top top-static">
                     <div class="text" id="top-static">${this._digit}</div>
-                    <div class="shadow"></div>
                 </div>
                 <div class="segment bottom bottom-static">
                     <div class="text" id="bottom-static">${this._digit}</div>
-                    <div class="shadow"></div>
                 </div>
                 <div class="flap" id="animated-flap">
                     <div class="flap-front segment top">
                         <div class="text" id="flap-front-text">${this._digit}</div>
-                        <div class="shadow"></div>
                     </div>
                     <div class="flap-back segment bottom">
                         <div class="text" id="flap-back-text">${this._digit}</div>
-                        <div class="gradient-overlay"></div>
-                        <div class="shadow"></div>
                     </div>
                 </div>
-                <div class="hinge"></div>
             </div>
         `;
         
