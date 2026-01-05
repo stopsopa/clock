@@ -9,7 +9,7 @@ export class FlapDigit extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return ['digit', 'font'];
+        return ['digit', 'font', 'hfont'];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -27,6 +27,8 @@ export class FlapDigit extends HTMLElement {
             }
         } else if (name === 'font' && oldValue !== newValue) {
             this._updateFont();
+        } else if (name === 'hfont' && oldValue !== newValue) {
+            this._updateFontScaling();
         }
     }
 
@@ -261,10 +263,18 @@ export class FlapDigit extends HTMLElement {
         // Font size should be slightly smaller than the container height/width
         const fontSize = Math.min(height * 0.85, width * 1.1);
         
+        const hfont = parseFloat(this.getAttribute('hfont')) || 0;
+        // Map -100 to 100 range to a percentage of font size
+        // 100 means move down by font size, -100 means move up by font size
+        // Actually the user wants to "control height of the font", usually meaning vertical offset.
+        // Let's use it as a percentage shift.
+        const verticalOffset = (hfont / 100) * (fontSize * 0.5);
+
         texts.forEach(t => {
             t.style.height = `${height}px`;
             t.style.lineHeight = `${height}px`;
             t.style.fontSize = `${fontSize}px`;
+            t.style.transform = `translateY(${verticalOffset}px)`;
         });
     }
 

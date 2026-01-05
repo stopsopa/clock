@@ -34,6 +34,10 @@
                         <label for="height">HEIGHT</label>
                         <input type="range" id="height" min="80" max="400" value="140">
                     </div>
+                    <div class="slider-item">
+                        <label for="v-offset">V-OFFSET</label>
+                        <input type="range" id="v-offset" min="-100" max="100" value="0">
+                    </div>
                 </div>
                 <div class="divider"></div>
                 <div class="control-group">
@@ -146,16 +150,19 @@
 
         const widthSlider = document.getElementById('width');
         const heightSlider = document.getElementById('height');
+        const offsetSlider = document.getElementById('v-offset');
         const fontSelect = document.getElementById('font-select');
 
         function syncSliderStyles() {
             const w = widthSlider.value + 'px';
             const h = heightSlider.value + 'px';
+            const off = offsetSlider.value;
             const f = fontSelect.value;
             const digits = document.querySelectorAll('flap-digit');
             digits.forEach(d => {
                 d.style.width = w;
                 d.style.height = h;
+                d.setAttribute('hfont', off);
                 if (f) {
                     d.setAttribute('font', f);
                 } else {
@@ -166,6 +173,7 @@
 
         widthSlider.addEventListener('input', syncSliderStyles);
         heightSlider.addEventListener('input', syncSliderStyles);
+        offsetSlider.addEventListener('input', syncSliderStyles);
         fontSelect.addEventListener('change', syncSliderStyles);
 
         // Initial sizing trigger
