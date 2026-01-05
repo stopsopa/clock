@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Split-Flap Clock</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>SPLIT-FLAP</h1>
+            <div class="controls">
+                <label class="toggle-container">
+                    <input type="radio" name="format" value="24" checked>
+                    <span class="label-text">24H</span>
+                </label>
+                <label class="toggle-container">
+                    <input type="radio" name="format" value="12">
+                    <span class="label-text">12H</span>
+                </label>
+            </div>
+        </header>
+
+        <main>
+            <div class="clock">
+                <div class="group">
+                    <flap-digit id="h1" digit="0"></flap-digit>
+                    <flap-digit id="h2" digit="0"></flap-digit>
+                </div>
+                <div class="separator">:</div>
+                <div class="group">
+                    <flap-digit id="m1" digit="0"></flap-digit>
+                    <flap-digit id="m2" digit="0"></flap-digit>
+                </div>
+                <div class="separator">:</div>
+                <div class="group">
+                    <flap-digit id="s1" digit="0"></flap-digit>
+                    <flap-digit id="s2" digit="0"></flap-digit>
+                </div>
+                <div id="ampm" class="ampm-label" style="display: none;">AM</div>
+            </div>
+        </main>
+
+        <footer>
+            <p>AUTHENTIC MECHANICAL MOTION</p>
+        </footer>
+    </div>
+
+    <script type="module" src="flap-digit.js"></script>
+    <script type="module">
+        const h1 = document.getElementById('h1');
+        const h2 = document.getElementById('h2');
+        const m1 = document.getElementById('m1');
+        const m2 = document.getElementById('m2');
+        const s1 = document.getElementById('s1');
+        const s2 = document.getElementById('s2');
+        const ampmLabel = document.getElementById('ampm');
+        const formatRadios = document.getElementsByName('format');
+
+        let is24h = true;
+
+        formatRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                is24h = e.target.value === '24';
+                updateClock(true); // Force update
+                ampmLabel.style.display = is24h ? 'none' : 'block';
+            });
+        });
+
+        function updateClock(force = false) {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            let ampm = '';
+            if (!is24h) {
+                ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                ampmLabel.textContent = ampm;
+            }
+
+            const hStr = hours.toString().padStart(2, '0');
+            const mStr = minutes.toString().padStart(2, '0');
+            const sStr = seconds.toString().padStart(2, '0');
+
+            updateDigit(h1, hStr[0], force);
+            updateDigit(h2, hStr[1], force);
+            updateDigit(m1, mStr[0], force);
+            updateDigit(m2, mStr[1], force);
+            updateDigit(s1, sStr[0], force);
+            updateDigit(s2, sStr[1], force);
+        }
+
+        function updateDigit(el, val, force) {
+            if (force || el.getAttribute('digit') !== val) {
+                el.setAttribute('digit', val);
+            }
+        }
+
+        setInterval(() => updateClock(), 1000);
+        updateClock(true);
+
+        // Initial sizing trigger
+        window.addEventListener('load', () => {
+            const digits = document.querySelectorAll('flap-digit');
+            digits.forEach(d => d._updateFontScaling && d._updateFontScaling());
+        });
+        window.addEventListener('resize', () => {
+             const digits = document.querySelectorAll('flap-digit');
+            digits.forEach(d => d._updateFontScaling && d._updateFontScaling());
+        });
+    </script>
+</body>
+</html>
